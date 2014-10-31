@@ -1,4 +1,7 @@
-source(paste0(getwd(), '/read_data.R'))
+require(plyr)
+
+source(paste0(getwd(), '/read_data.R'), echo=F)
+
 
 quantitativeFeatures <- function(dfr){
   # exctracts quantitative features from the dataframe by regexp
@@ -61,10 +64,31 @@ quants.best <- quantitativeFeatures(train.data)[,
                                                   'Quan_4',
                                                   'Quan_15')]
 quants.best.imputed <- imputeMedians(quants.best)
+
+#select best categorical features
+cats <- categoricalFeatures(train.data)
+
+
 # merge data together
 train.data <- cbind(
   outcomes(train.data), 
   quants.best, 
-  dates(train.data),
-  categoricalFeatures(train.data))
+  dates(train.data)
+  #, cats
+  )
+
+#extract a "month" feature from the outcomes variables
+
+train.data <- melt(
+  data = train.data,
+  measure.vars = names(train.data)[grepl('^Outcome_M', names(train.data))],
+  variable.name = 'Month',
+  value.name = 'Outcome',
+  na.rm=T,
+  )
+
+train.data <- mutate(train.data, Month=sub('^Outcome_M','', Month))
+
+train.data$Month <- as.factor(train.data$Month)
+
 

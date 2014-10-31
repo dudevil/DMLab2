@@ -2,7 +2,7 @@ require(mgcv)
 require(boot)
 require(gbm)
 
-source(paste0(getwd(), '/preprocess.R'))
+source(paste0(getwd(), '/preprocess.R'), echo = F)
 
 
 splitdata <- function(dfr, proportion=0.9, seed=NULL) {
@@ -67,20 +67,20 @@ cv <- function(train_fun, predict_fun, data, response_col, K=5, cost=rmse){
   mean(err)
 }
 
-sets <- splitdata(test.data)
+sets <- splitdata(train.data)
 trainset = sets[['trainset']]
 validset = sets[['validset']]
 
 test.gbm <- function(x) {
-  gbm.fit(
+  my.gbm <- gbm.fit(
     x = x[,names(x) != 'Outcome'],
     y = x[,c('Outcome')],
     distribution = 'gaussian',
-    n.trees = 5000,
+    n.trees = 150,
     nTrain = round(0.9 * nrow(trainset)),
     shrinkage = 0.01,
-    interaction.depth = 4)
+    interaction.depth = 2)
   
 }
 
-#cv(test.gbm, predict, data=test.data, K=5, cost=rmsle)
+cv(test.gbm, predict, data=train.data, response_col ='Outcome', K=5, cost=rmsle)
