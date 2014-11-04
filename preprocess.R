@@ -1,4 +1,5 @@
 require(plyr)
+require(reshape2)
 
 source(paste0(getwd(), '/read_data.R'), echo=F)
 
@@ -65,16 +66,16 @@ quants.best <- quantitativeFeatures(train.data)[,
                                                   'Quan_15')]
 quants.best.imputed <- imputeMedians(quants.best)
 
-#select best categorical features
+#select categorical features and cast them to factors
 cats <- categoricalFeatures(train.data)
-
+cats <- data.frame(apply(cats, 2, as.factor))
 
 # merge data together
 train.data <- cbind(
   outcomes(train.data), 
   quants.best, 
-  dates(train.data)
-  #, cats
+  dates(train.data),
+  cats
   )
 
 #extract a "month" feature from the outcomes variables
@@ -92,3 +93,27 @@ train.data <- mutate(train.data, Month=sub('^Outcome_M','', Month))
 train.data$Month <- as.factor(train.data$Month)
 
 
+# prepare test.data in the same manner
+
+quants.test <- quantitativeFeatures(test.data)[,
+                                                c('Quan_1',
+                                                  'Quan_2',
+                                                  'Quan_3',
+                                                  'Quan_4',
+                                                  'Quan_15')]
+quants.test <- imputeMedians(quants.test)
+
+
+cats.test <- categoricalFeatures(test.data)
+cats.test <- data.frame(apply(cats.test, 2, as.factor))
+
+# merge data together
+test.data <- cbind(
+  quants.test, 
+  dates(test.data),
+  cats.test
+)
+
+#simulate the Month variable
+
+test.data <- merge(data.frame(Month=1:12), test.data)

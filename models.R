@@ -72,15 +72,30 @@ trainset = sets[['trainset']]
 validset = sets[['validset']]
 
 test.gbm <- function(x) {
-  my.gbm <- gbm.fit(
-    x = x[,names(x) != 'Outcome'],
-    y = x[,c('Outcome')],
+  my.gbm <- gbm(
+    Outcome ~ . ,
+    data = x, 
+    n.trees = 453, #obtained from gbm.perf
     distribution = 'gaussian',
-    n.trees = 150,
-    nTrain = round(0.9 * nrow(trainset)),
-    shrinkage = 0.01,
-    interaction.depth = 2)
-  
+    shrinkage = 0.0005
+    #,cv.folds=5
+    )
+  return(my.gbm)
 }
 
-cv(test.gbm, predict, data=train.data, response_col ='Outcome', K=5, cost=rmsle)
+predict.fn <- function(x, data){
+  predict.gbm(x, data, n.trees = 453  )
+  
+}
+cv(test.gbm, predict.fn, data=train.data, response_col ='Outcome', K=5, cost=rmsle)
+
+gbm.1 <- gbm(
+  Outcome ~ . ,
+  data = train.data, 
+  n.trees = 453, #obtained from gbm.perf
+  distribution = 'gaussian',
+  shrinkage = 0.0005
+  #,cv.folds=5
+)
+
+prediction1 <- predict.gbm(gbm.1, test.data, n.trees=453)
