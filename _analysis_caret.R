@@ -22,7 +22,7 @@ rmsle <- function(data.frame(obs, pred), lev = NULL, model = "gbm"){
   # see: http://www.kaggle.com/c/online-sales/details/Evaluation
   # Caret requires names like "obs" and "pred"
   dfr_test <- data.frame(obs, pred)
-  return(sqrt(sum((log(dfr_test$pred+1) - log(dfr_testobs+1))^2)/length(obs)))
+  return(sqrt(sum((log(dfr_test$pred+1) - log(dfr_test$obs+1))^2)/length(obs)))
 }
 
 rmse <- function(y, y_hat){
